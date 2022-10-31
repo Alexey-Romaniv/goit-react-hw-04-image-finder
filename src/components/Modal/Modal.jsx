@@ -3,26 +3,24 @@ import { useEffect } from 'react';
 import s from './Modal.module.css';
 
 export const Modal = ({ closeModal, url }) => {
-  const closeByEsc = e => {
-    if (e.code === 'Escape') {
-      closeModal();
-    }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const closeByEsc = ({ code }) => {
+      if (code === 'Escape') {
+        closeModal();
+      }
+    };
+    window.addEventListener('keydown', closeByEsc);
+    return () => {
+      window.removeEventListener('keydown', closeByEsc);
+    };
+  }, [closeModal]);
 
   const closeByBackdrop = e => {
     if (e.currentTarget === e.target) {
       closeModal();
     }
   };
-
-  useEffect(() => {
-    window.addEventListener('keydown', closeByEsc);
-    window.addEventListener('click', closeByBackdrop);
-    return () => {
-      window.removeEventListener('keydown', closeByEsc);
-      window.removeEventListener('click', closeByBackdrop);
-    };
-  }, []);
 
   return (
     <div className={s.overlay} onClick={closeByBackdrop}>

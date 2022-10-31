@@ -27,46 +27,46 @@ export const App = () => {
   const [NotFound, setNotFound] = useState(false);
   const [Error, setError] = useState(null);
   const [Page, setPage] = useState(1);
-  // const [LargeImageId, setLargeImageId] = useState(null);
   const [ImageInModal, setImageInModal] = useState(null);
   const [Total, setTotal] = useState(null);
   useEffect(() => {
     if (Query === '') {
       return;
     }
+    const searchImg = async (query, page) => {
+      setIsLoading(true);
+      setError(null);
+      setNotFound(false);
+      try {
+        const data = await fetchImages(query, page);
+
+        const apiImages = data.data.hits;
+        if (apiImages.length) {
+          setImages(prevImages => [
+            ...prevImages,
+            ...apiImages.map(({ id, largeImageURL, webformatURL }) => ({
+              id,
+              webformatURL,
+              largeImageURL,
+            })),
+          ]);
+          setNotFound(false);
+          setTotal(data.data.totalHits);
+        } else {
+          setNotFound(true);
+          setTotal(null);
+          setImages([]);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     searchImg(Query, Page);
   }, [Query, Page]);
 
-  const searchImg = async (query, page) => {
-    setIsLoading(true);
-    setError(null);
-    setNotFound(false);
-    try {
-      const data = await fetchImages(query, page);
-
-      const apiImages = data.data.hits;
-      if (apiImages.length) {
-        setImages([
-          ...Images,
-          ...apiImages.map(({ id, largeImageURL, webformatURL }) => ({
-            id,
-            webformatURL,
-            largeImageURL,
-          })),
-        ]);
-        setNotFound(false);
-        setTotal(data.data.totalHits);
-      } else {
-        setNotFound(true);
-        setTotal(null);
-        setImages([]);
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   const onSubmit = query => {
     if (query === Query) {
       return;
