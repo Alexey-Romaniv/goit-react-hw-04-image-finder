@@ -1,8 +1,8 @@
 import s from '../../styles.module.css';
 import PropTypes from 'prop-types';
-export const ImageGalleryItem = ({ id, image, largeImage }) => {
+export const ImageGalleryItem = ({ image, largeImage }, key) => {
   return (
-    <li key={id} className={s.ImageGalleryItem}>
+    <li key={key} className={s.ImageGalleryItem}>
       <img
         className={s.ImageGalleryItem_image}
         src={image}
@@ -13,8 +13,8 @@ export const ImageGalleryItem = ({ id, image, largeImage }) => {
   );
 };
 
-ImageGalleryItem.propTypes = {
-  id: PropTypes.string.isRequired,
-  image: PropTypes.string.isRequired,
-  largeImageURL: PropTypes.string.isRequired,
-};
+// ImageGalleryItem.propTypes = {
+//   id: PropTypes.number.isRequired,
+//   image: PropTypes.string.isRequired,
+//   largeImageURL: PropTypes.string.isRequired,
+// };

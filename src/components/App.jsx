@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 
 import { SearchBar } from './Searchbar/Searchbar';
@@ -9,91 +9,98 @@ import { Loader } from './Loader';
 import { Modal } from './Modal/Modal';
 import fetchImages from 'services/rest-api';
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    isLoading: false,
-    notFound: false,
-    error: null,
-    page: 1,
-    largeImageId: null,
-    imageInModal: null,
-    total: null,
-  };
-
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.searchImg(this.state.query, this.state.page);
+export const App = () => {
+  // state = {
+  //   query: '',
+  //   images: [],
+  //   isLoading: false,
+  //   notFound: false,
+  //   error: null,
+  //   page: 1,
+  //   largeImageId: null,
+  //   imageInModal: null,
+  //   total: null,
+  // };
+  const [Query, setQuery] = useState('');
+  const [Images, setImages] = useState([]);
+  const [IsLoading, setIsLoading] = useState(false);
+  const [NotFound, setNotFound] = useState(false);
+  const [Error, setError] = useState(null);
+  const [Page, setPage] = useState(1);
+  // const [LargeImageId, setLargeImageId] = useState(null);
+  const [ImageInModal, setImageInModal] = useState(null);
+  const [Total, setTotal] = useState(null);
+  useEffect(() => {
+    if (Query === '') {
+      return;
     }
-  }
-  searchImg = async (query, page) => {
-    this.setState({ isLoading: true, error: null, notFound: false });
+    searchImg(Query, Page);
+  }, [Query, Page]);
+
+  const searchImg = async (query, page) => {
+    setIsLoading(true);
+    setError(null);
+    setNotFound(false);
     try {
       const data = await fetchImages(query, page);
-      console.log(data.data.totalHits);
 
       const apiImages = data.data.hits;
       if (apiImages.length) {
-        this.setState(prevState => ({
-          images: [
-            ...prevState.images,
-            ...apiImages.map(({ id, largeImageURL, webformatURL }) => ({
-              id,
-              webformatURL,
-              largeImageURL,
-            })),
-          ],
-          notFound: false,
-          total: data.data.totalHits,
-        }));
+        setImages([
+          ...Images,
+          ...apiImages.map(({ id, largeImageURL, webformatURL }) => ({
+            id,
+            webformatURL,
+            largeImageURL,
+          })),
+        ]);
+        setNotFound(false);
+        setTotal(data.data.totalHits);
       } else {
-        this.setState({ notFound: true, total: null, images: [] });
+        setNotFound(true);
+        setTotal(null);
+        setImages([]);
       }
     } catch (err) {
-      this.setState({ error: err.message });
+      setError(err.message);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
   };
-  onSubmit = query => {
-    this.setState({ query, images: [], page: 1 });
+  const onSubmit = query => {
+    if (query === Query) {
+      return;
+    }
+    setQuery(query);
+    setImages([]);
+    setPage(1);
   };
-  handleNextPage = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const handleNextPage = () => {
+    setPage(Page + 1);
   };
-  openModal = e => {
+  const openModal = e => {
     const imageInModal = e.target.dataset.url;
-    this.setState({ imageInModal: imageInModal });
+    setImageInModal(imageInModal);
   };
 
-  closeModal = () => {
-    this.setState({ imageInModal: null });
+  const closeModal = () => {
+    setImageInModal(null);
   };
 
-  render() {
-    const { total, images, page, error, notFound, isLoading, imageInModal } =
-      this.state;
-    return (
-      <>
-        <ToastContainer position="top-right" autoClose={2000} />
-        <SearchBar onSubmit={this.onSubmit} />
-        {isLoading && <Loader />}
-        {error && <Notification msg={error} />}
-        {notFound && !error && (
-          <Notification msg="Nothing found for your request" />
-        )}
-        <ImageGallery array={images} openModal={this.openModal} />
-        {page < total / 12 && (
-          <LoadMore handleNextPage={() => this.handleNextPage()} />
-        )}
-        {imageInModal && (
-          <Modal url={imageInModal} closeModal={this.closeModal} />
-        )}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <ToastContainer position="top-right" autoClose={2000} />
+      <SearchBar onSubmit={onSubmit} />
+      {IsLoading && <Loader />}
+      {Error && <Notification msg={Error} />}
+      {NotFound && !Error && (
+        <Notification msg="Nothing found for your request" />
+      )}
+      <ImageGallery array={Images} openModal={openModal} />
+      {Page < Total / 12 && !IsLoading && !Error && (
+        <LoadMore handleNextPage={() => handleNextPage()} />
+      )}
+      {ImageInModal && <Modal closeModal={closeModal} url={ImageInModal} />}
+    </>
+  );
+};
