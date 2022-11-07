@@ -21,16 +21,16 @@ export const App = () => {
   //   imageInModal: null,
   //   total: null,
   // };
-  const [Query, setQuery] = useState('');
+  const [query, setQuery] = useState('');
   const [Images, setImages] = useState([]);
-  const [IsLoading, setIsLoading] = useState(false);
-  const [NotFound, setNotFound] = useState(false);
-  const [Error, setError] = useState(null);
-  const [Page, setPage] = useState(1);
-  const [ImageInModal, setImageInModal] = useState(null);
-  const [Total, setTotal] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [imageInModal, setImageInModal] = useState(null);
+  const [total, setTotal] = useState(null);
   useEffect(() => {
-    if (Query === '') {
+    if (query === '') {
       return;
     }
     const searchImg = async (query, page) => {
@@ -64,19 +64,19 @@ export const App = () => {
       }
     };
 
-    searchImg(Query, Page);
-  }, [Query, Page]);
+    searchImg(query, page);
+  }, [query, page]);
 
-  const onSubmit = query => {
+  const onSubmit = Query => {
     if (query === Query) {
       return;
     }
-    setQuery(query);
+    setQuery(Query);
     setImages([]);
     setPage(1);
   };
   const handleNextPage = () => {
-    setPage(Page + 1);
+    setPage(page + 1);
   };
   const openModal = e => {
     const imageInModal = e.target.dataset.url;
@@ -91,16 +91,16 @@ export const App = () => {
     <>
       <ToastContainer position="top-right" autoClose={2000} />
       <SearchBar onSubmit={onSubmit} />
-      {IsLoading && <Loader />}
-      {Error && <Notification msg={Error} />}
-      {NotFound && !Error && (
+      {isLoading && <Loader />}
+      {error && <Notification msg={error} />}
+      {notFound && !error && (
         <Notification msg="Nothing found for your request" />
       )}
       <ImageGallery array={Images} openModal={openModal} />
-      {Page < Total / 12 && !IsLoading && !Error && (
+      {page < total / 12 && !isLoading && !error && (
         <LoadMore handleNextPage={() => handleNextPage()} />
       )}
-      {ImageInModal && <Modal closeModal={closeModal} url={ImageInModal} />}
+      {imageInModal && <Modal closeModal={closeModal} url={imageInModal} />}
     </>
   );
 };
